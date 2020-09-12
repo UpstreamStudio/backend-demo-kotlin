@@ -9,13 +9,15 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class UserDetailsServiceImpl : UserDetailsService {
+open class UserDetailsServiceImpl : UserDetailsService {
+
     @Autowired
-    var userRepository: UserRepository? = null
+    lateinit var userRepository: UserRepository
+
     @Transactional
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
-        val user = userRepository!!.findByUsername(username)
+        val user = userRepository.findByUsername(username)
                 .orElseThrow { UsernameNotFoundException("User Not Found with username: $username") }
         return UserDetailsImpl.Companion.build(user)
     }
