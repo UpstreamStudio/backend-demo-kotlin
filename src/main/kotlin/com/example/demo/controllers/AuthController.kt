@@ -45,7 +45,7 @@ class AuthController {
     @PostMapping("/signin")
     fun authenticateUser(@RequestBody loginRequest: @Valid LoginRequest?): ResponseEntity<*> {
         val authentication = authenticationManager!!.authenticate(
-                UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()))
+                UsernamePasswordAuthenticationToken(loginRequest?.username, loginRequest?.password))
         SecurityContextHolder.getContext().authentication = authentication
         val jwt = jwtUtils!!.generateJwtToken(authentication)
         val userDetails = authentication.principal as UserDetailsImpl
@@ -61,22 +61,23 @@ class AuthController {
 
     @PostMapping("/signup")
     fun registerUser(@RequestBody signUpRequest: @Valid SignupRequest?): ResponseEntity<*> {
-        if (userRepository!!.existsByUsername(signUpRequest.getUsername())) {
+        if (userRepository!!.existsByUsername(signUpRequest?.username)) {
             return ResponseEntity
                     .badRequest()
                     .body(MessageResponse("Error: Username is already taken!"))
         }
-        if (userRepository!!.existsByEmail(signUpRequest.getEmail())) {
+        if (userRepository!!.existsByEmail(signUpRequest?.email)) {
             return ResponseEntity
                     .badRequest()
                     .body(MessageResponse("Error: Email is already in use!"))
         }
 
         // Create new user's account
-        val user = User(signUpRequest.getUsername(),
-                signUpRequest.getEmail(),
-                encoder!!.encode(signUpRequest.getPassword()))
-        val strRoles = signUpRequest.getRoles()
+        val user = User(signUpRequest?.username,
+                signUpRequest?.email,
+                encoder!!.encode(signUpRequest?.password))
+        val strRoles = signUpRequest?.roles
+
         val roles: MutableSet<Role?> = HashSet()
         if (strRoles == null) {
             val userRole = roleRepository!!.findByName(ERole.ROLE_USER)
@@ -103,7 +104,7 @@ class AuthController {
                 }
             })
         }
-        user.roles = roles
+        user.roles = roles as Set<Role>
         userRepository!!.save(user)
         return ResponseEntity.ok(MessageResponse("User registered successfully!"))
     }

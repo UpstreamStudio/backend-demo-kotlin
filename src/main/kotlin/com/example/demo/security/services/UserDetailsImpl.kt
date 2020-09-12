@@ -7,18 +7,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import java.util.stream.Collectors
 
-class UserDetailsImpl(val id: String?, private val username: String, val email: String?, @field:JsonIgnore private val password: String,
+class UserDetailsImpl(val id: String?, private val username: String?, val email: String?, private val password: String?,
                       private val authorities: Collection<GrantedAuthority>) : UserDetails {
 
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return authorities
     }
 
-    override fun getPassword(): String {
+    override fun getPassword(): String? {
         return password
     }
 
-    override fun getUsername(): String {
+    override fun getUsername(): String? {
         return username
     }
 
@@ -48,14 +48,14 @@ class UserDetailsImpl(val id: String?, private val username: String, val email: 
     companion object {
         private const val serialVersionUID = 1L
         fun build(user: User?): UserDetailsImpl {
-            val authorities: List<GrantedAuthority> = user.getRoles().stream()
-                    .map { role: Role? -> SimpleGrantedAuthority(role.getName().name) }
-                    .collect(Collectors.toList())
+            val authorities: List<GrantedAuthority> = user?.roles?.stream()
+                    ?.map { role: Role? -> SimpleGrantedAuthority(role?.name?.name) }
+                    ?.collect(Collectors.toList()) ?: listOf<GrantedAuthority>()
             return UserDetailsImpl(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getPassword(),
+                    user?.id,
+                    user?.username,
+                    user?.email,
+                    user?.password,
                     authorities)
         }
     }
